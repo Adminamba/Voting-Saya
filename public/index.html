@@ -1,1 +1,209 @@
 
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#170b32">
+  <title>Unlimited Voting 🌈</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      padding: 25px 15px;
+      font-family: Arial, sans-serif;
+      color: white;
+      background: linear-gradient(135deg, #170b32, #48206c, #102d50);
+    }
+
+    .container {
+      max-width: 950px;
+      margin: auto;
+      text-align: center;
+    }
+
+    h1 {
+      font-size: clamp(30px, 6vw, 52px);
+      color: #ff80c1;
+    }
+
+    .subtitle {
+      color: #ddd0ef;
+    }
+
+    .poster {
+      display: block;
+      width: min(100%, 420px);
+      margin: 25px auto;
+      border-radius: 18px;
+      box-shadow: 0 0 30px #d64cff66;
+    }
+
+    .card {
+      max-width: 450px;
+      margin: 25px auto;
+      padding: 28px;
+      border-radius: 20px;
+      background: #ffffff15;
+      border: 1px solid #ffffff30;
+    }
+
+    .count {
+      font-size: clamp(45px, 10vw, 65px);
+      font-weight: bold;
+      color: #ffd36b;
+      margin: 18px;
+    }
+
+    button {
+      width: 100%;
+      padding: 17px;
+      border: none;
+      border-radius: 12px;
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
+      background: linear-gradient(90deg, #ff70b8, #a875ff);
+      color: white;
+      transition: .2s;
+    }
+
+    button:hover {
+      transform: translateY(-3px);
+      filter: brightness(1.1);
+    }
+
+    button:disabled {
+      opacity: .6;
+      cursor: wait;
+    }
+
+    #status {
+      font-size: 14px;
+      color: #c9e9ff;
+      min-height: 20px;
+    }
+
+    .info {
+      font-size: 12px;
+      color: #d5c8e7;
+      line-height: 1.6;
+    }
+  </style>
+</head>
+
+<body>
+  <main class="container">
+
+    <h1>🌈 VOTE SEPUASNYA! 🌈</h1>
+
+    <p class="subtitle">
+      Setiap klik dihitung. Dukung kandidat pilihanmu!
+    </p>
+
+    <img
+      src="/adjiOhMyWow.png"
+      alt="Poster kandidat"
+      class="poster"
+    >
+
+    <section class="card">
+
+      <h2>Orang Paling Gay di Dunia</h2>
+
+      <p>Total vote seluruh pengunjung:</p>
+
+      <div class="count" id="count">...</div>
+
+      <button id="voteButton">
+        🌈 SAYA VOTE!
+      </button>
+
+      <p id="status">Menghubungkan ke server...</p>
+
+      <p class="info">
+        Setiap klik menambahkan satu vote.
+        Jumlah ini menunjukkan total klik, bukan
+        jumlah orang unik.
+      </p>
+
+    </section>
+
+  </main>
+
+  <script>
+    const countElement = document.getElementById("count");
+    const voteButton = document.getElementById("voteButton");
+    const statusElement = document.getElementById("status");
+
+    let busy = false;
+
+    async function getVotes() {
+      try {
+        const response = await fetch("/api/votes", {
+          cache: "no-store"
+        });
+
+        if (!response.ok) {
+          throw new Error("Gagal mengambil data");
+        }
+
+        const result = await response.json();
+
+        countElement.textContent =
+          Number(result.count).toLocaleString("id-ID");
+
+        statusElement.textContent = "Server terhubung! 🌈";
+
+      } catch (error) {
+        statusElement.textContent = "Gagal menghubungkan server.";
+      }
+    }
+
+    voteButton.addEventListener("click", async () => {
+      if (busy) return;
+
+      busy = true;
+      voteButton.disabled = true;
+      voteButton.textContent = "Mengirim vote...";
+
+      try {
+        const response = await fetch("/api/votes", {
+          method: "POST"
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+          throw new Error("Vote gagal");
+        }
+
+        countElement.textContent =
+          Number(result.count).toLocaleString("id-ID");
+
+        statusElement.textContent =
+          "Vote berhasil ditambahkan! 🎉";
+
+      } catch (error) {
+        statusElement.textContent =
+          "Vote gagal. Silakan coba lagi.";
+      } finally {
+        busy = false;
+        voteButton.disabled = false;
+        voteButton.textContent = "🌈 SAYA VOTE!";
+      }
+    });
+
+    getVotes();
+
+    setInterval(getVotes, 5000);
+  </script>
+
+</body>
+</html>
